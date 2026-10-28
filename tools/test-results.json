@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-10-28T19:51:57.176Z",
+  "version": "2.5.1",
+  "suitesPassed": 85,
+  "suitesTotal": 85,
+  "status": "PASSED",
+  "environment": {
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.12.0",
+    "cpus": 8,
+    "totalMemoryGb": "16.36"
+  },
+  "mockPolicy": "No business-logic mocks; headless fallbacks for Electron-only APIs (clipboard, dialog, shell)"
+}

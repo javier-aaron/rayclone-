@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Production build outputs and installers
+dist/
+build/temp/
+
+# Logs and environment
+*.log
+npm-debug.log*
+.env
+.env.*
+
+# OS and editor files
+Thumbs.db
+Desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# Caches and agent workspaces
+.agents/
+.cache/
+probe/
+tmp-test/
+scratch/
+
+# Local test / seed data files
+*.json
+!package.json
+!package-lock.json
+!tools/test-results.json
+
+# REA / Inspection scratch artifacts (Clean-Room Boundary)
+tools/extract-raycast.mjs
+tools/inspect-raycast-deep.mjs
+tools/inspect-terms.mjs
+tools/parse-internal-extensions.mjs
+tools/raycast-catalog.json
+tools/full-catalog-dump.txt
+tools/dump-full-catalog.mjs
+tools/shot-app.mjs
+tools/shot-settings.mjs
+tools/debug-ww.js
+tools/test-vsc.mjs
+tools/test-builtin-tools.mjs
+tools/test-admin-actions.mjs
+tools/test-window-walker.mjs

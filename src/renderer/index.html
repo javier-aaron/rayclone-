@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self';" />
+    <title>Rayclone</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="window">
+      <canvas id="confetti-canvas" class="confetti-canvas" hidden></canvas>
+      <div class="searchbar">
+        <svg class="search-icon" viewBox="0 0 16 16" aria-hidden="true">
+          <circle cx="6.6" cy="6.6" r="4.6" fill="none" stroke="currentColor" stroke-width="1.6" />
+          <path d="M10.2 10.2 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+        <input id="query" type="text" autocomplete="off" spellcheck="false"
+               placeholder="Search for apps, files, commands, conversions..." aria-label="Search" />
+        <button id="clear" class="clear" type="button" title="Clear" hidden>&times;</button>
+      </div>
+
+      <!-- Main Body: Two-Column Split (Results + Quick Look Preview) -->
+      <div class="main-body">
+        <div id="results" class="results" role="listbox" aria-label="Results"></div>
+        <div id="preview-pane" class="preview-pane" aria-label="Quick Look Details">
+          <div id="preview-empty" class="preview-empty">Select an item to preview</div>
+          <div id="preview-content" class="preview-content" hidden></div>
+        </div>
+      </div>
+
+      <!-- Actions Menu Popover (Ctrl+K) -->
+      <div id="actions-popover" class="actions-popover" hidden>
+        <div class="actions-popover-header">
+          <span class="actions-popover-title">Actions</span>
+          <span class="actions-popover-item" id="actions-item-name"></span>
+        </div>
+        <div id="actions-list" class="actions-list" role="listbox" aria-label="Available Actions"></div>
+        <div class="actions-popover-footer">
+          <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> navigate</span>
+          <span><kbd>&crarr;</kbd> execute</span>
+          <span><kbd>esc</kbd> cancel</span>
+        </div>
+      </div>
+
+      <!-- Settings Modal (Ctrl+,) -->
+      <div id="settings-modal" class="settings-modal" hidden>
+        <div class="settings-container">
+          <div class="settings-header">
+            <div class="settings-title-group">
+              <span class="settings-title">Rayclone Settings</span>
+              <span class="settings-subtitle">Launcher Preferences & Keybindings</span>
+            </div>
+            <button id="settings-close" class="settings-close-btn" type="button" title="Close Settings (Esc)">&times;</button>
+          </div>
+
+          <div class="settings-body">
+            <!-- General & Hotkey -->
+            <div class="settings-section">
+              <div class="settings-section-title">General</div>
+              <div class="settings-row">
+                <div class="settings-label">
+                  <span class="settings-label-title">Global Hotkey</span>
+                  <span class="settings-label-desc">Shortcut to open/toggle Rayclone</span>
+                </div>
+                <div class="settings-input-group">
+                  <input id="setting-hotkey" type="text" class="settings-input" placeholder="e.g. Alt+Space" />
+                  <button id="btn-save-hotkey" class="settings-btn" type="button">Set</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Appearance & Theme Studio -->
+            <div class="settings-section">
+              <div class="settings-section-title">Appearance & Themes</div>
+              <div class="settings-row">
+                <div class="settings-label">
+                  <span class="settings-label-title">Theme Preset</span>
+                  <span class="settings-label-desc">Interface style and contrast</span>
+                </div>
+                <select id="setting-theme" class="settings-select">
+                  <option value="dark">Raycast Dark</option>
+                  <option value="oled">Pure Black (OLED)</option>
+                  <option value="nord">Nord Frost</option>
+                  <option value="catppuccin">Catppuccin Mocha</option>
+                  <option value="light">Raycast Light</option>
+                </select>
+              </div>
+
+              <div class="settings-row">
+                <div class="settings-label">
+                  <span class="settings-label-title">Accent Color</span>
+                  <span class="settings-label-desc">Brand highlight and selection glow</span>
+                </div>
+                <div class="color-picker-row">
+                  <button class="color-swatch" data-color="#ff6363" style="background:#ff6363" title="Raycast Red"></button>
+                  <button class="color-swatch" data-color="#a855f7" style="background:#a855f7" title="Electric Violet"></button>
+                  <button class="color-swatch" data-color="#3b82f6" style="background:#3b82f6" title="Blue"></button>
+                  <button class="color-swatch" data-color="#10b981" style="background:#10b981" title="Emerald"></button>
+                  <button class="color-swatch" data-color="#f59e0b" style="background:#f59e0b" title="Amber"></button>
+                </div>
+              </div>
+
+              <div class="settings-row">
+                <div class="settings-label">
+                  <span class="settings-label-title">Quick Look Preview</span>
+                  <span class="settings-label-desc">Two-column master-detail layout</span>
+                </div>
+                <label class="switch">
+                  <input id="setting-preview" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Raycast AI -->
+            <div class="settings-section">
+              <div class="settings-section-title">Raycast AI Assistant</div>
+              <div class="settings-row">
+                <div class="settings-label">
+                  <span class="settings-label-title">AI Provider</span>
+                  <span class="settings-label-desc">Local Ollama or OpenAI compatible</span>
+                </div>
+                <select id="setting-ai-provider" class="settings-select">
+                  <option value="ollama">Ollama (Local / Offline)</option>
+                  <option value="openai">OpenAI / OpenRouter</option>
+                </select>
+              </div>
+
+              <div class="settings-row">
+                <div class="settings-label">
+                  <span class="settings-label-title">Endpoint URL</span>
+                  <span class="settings-label-desc">Ollama host or API endpoint</span>
+                </div>
+                <input id="setting-ai-endpoint" type="text" class="settings-input" placeholder="http://localhost:11434" />
+              </div>
+
+              <div class="settings-row">
+                <div class="settings-label">
+                  <span class="settings-label-title">Model Name</span>
+                  <span class="settings-label-desc">e.g. llama3.2, mistral, gpt-4o-mini</span>
+                </div>
+                <input id="setting-ai-model" type="text" class="settings-input" placeholder="llama3.2" />
+              </div>
+
+              <div class="settings-row">
+                <div class="settings-label">
+                  <span class="settings-label-title">API Key (if required)</span>
+                  <span class="settings-label-desc">Optional for OpenAI/OpenRouter</span>
+                </div>
+                <input id="setting-ai-key" type="password" class="settings-input" placeholder="sk-..." />
+              </div>
+            </div>
+
+            <!-- Productivity & Extensions -->
+            <div class="settings-section">
+              <div class="settings-section-title">Productivity & Extensions</div>
+              <div class="settings-row">
+                <div class="settings-label">
+                  <span class="settings-label-title">Default Translation Language</span>
+                  <span class="settings-label-desc">Target language for Translator</span>
+                </div>
+                <select id="setting-target-lang" class="settings-select">
+                  <option value="es">Spanish (Español)</option>
+                  <option value="fr">French (Français)</option>
+                  <option value="de">German (Deutsch)</option>
+                  <option value="it">Italian (Italiano)</option>
+                  <option value="ja">Japanese (日本語)</option>
+                  <option value="zh">Chinese (中文)</option>
+                  <option value="ru">Russian (Русский)</option>
+                  <option value="pt">Portuguese (Português)</option>
+                </select>
+              </div>
+
+              <div class="settings-row">
+                <div class="settings-label">
+                  <span class="settings-label-title">Focus Session Interval</span>
+                  <span class="settings-label-desc">Default Pomodoro length in minutes</span>
+                </div>
+                <input id="setting-focus-duration" type="number" min="5" max="120" class="settings-input" style="width:80px;" value="25" />
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-footer">
+            <span id="settings-status" class="settings-status"></span>
+            <button id="btn-save-settings" class="settings-btn-primary" type="button">Save Changes</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="footer-left">
+          <span class="brand">
+            <svg viewBox="0 0 48 48" class="brand-mark" aria-hidden="true">
+              <path fill="#ff6363" fill-rule="evenodd" clip-rule="evenodd"
+                    d="M12 30.99V36L-.01 23.99l2.516-2.499zM17.01 36H12l12.011 12.01 2.506-2.505zm28.487-9.497L48 24 24 0l-2.503 2.503L30.98 12h-5.732l-6.62-6.614-2.506 2.503 4.122 4.122h-2.869v18.625H36V27.77l4.122 4.122 2.503-2.506L36 22.747v-5.732zM13.253 10.747l-2.503 2.506 2.686 2.686 2.503-2.506zm21.314 21.314-2.495 2.503 2.686 2.686 2.506-2.503zM7.878 16.121l-2.503 2.504L12 25.253v-5.012zM27.756 36h-5.009l6.628 6.625 2.503-2.503z" />
+            </svg>
+            Rayclone
+          </span>
+          <span id="status" class="status"></span>
+        </div>
+        <div class="footer-right">
+          <span class="hint"><kbd>&uarr;</kbd><kbd>&darr;</kbd> navigate</span>
+          <span class="hint"><kbd>&crarr;</kbd> open</span>
+          <button id="hud-detach-trigger" class="actions-trigger-btn" type="button" title="Detach to Floating HUD (Ctrl+Shift+D)">
+            Detach <kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>D</kbd>
+          </button>
+          <button id="settings-trigger" class="actions-trigger-btn" type="button" title="Preferences (Ctrl+,)">
+            Settings <kbd>Ctrl</kbd><kbd>,</kbd>
+          </button>
+          <button id="actions-trigger" class="actions-trigger-btn" type="button" title="Open Actions Menu (Ctrl+K)">
+            Actions <kbd>Ctrl</kbd><kbd>K</kbd>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detached Floating HUD Window Container (HUD Mode) -->
+    <div id="hud-container" class="hud-container" hidden>
+      <div class="hud-header">
+        <div class="hud-title-group">
+          <svg class="hud-icon" viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
+            <path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm1 0v10h10V3H3z"/>
+            <path d="M5 6h6v1H5V6zm0 3h4v1H5V9z"/>
+          </svg>
+          <span id="hud-title" class="hud-title">Scratchpad</span>
+        </div>
+        <div class="hud-controls">
+          <button id="hud-close" class="hud-btn" type="button" title="Close HUD (Esc)">&times;</button>
+        </div>
+      </div>
+      <div id="hud-body" class="hud-body"></div>
+    </div>
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>
